@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>역사 학습 아카이브 — jyapp History Study</title>
+
+  <!-- Pretendard, Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', '"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            dark: {
+              bg: '#09090b',
+              surface: '#121215',
+              card: '#18181b',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Pretendard', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+    .glass-panel {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .flip-card-inner {
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transform-style: preserve-3d;
+    }
+    .flip-card-flipped {
+      transform: rotateY(180deg);
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#09090b] dark:text-slate-100 transition-colors duration-200 selection:bg-brand-500 selection:text-white">
+
+  <!-- Background Ambient Glow -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+    <div class="absolute -top-40 left-1/4 w-96 h-96 bg-brand-500/10 dark:bg-brand-500/15 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/3 -right-24 w-80 h-80 bg-amber-500/10 dark:bg-amber-500/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-30 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#09090b]/80 glass-panel">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-700 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+          <i data-lucide="landmark" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-lg tracking-tight">ChronoNote</span>
+            <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">jyapp</span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">개인 맞춤형 역사 학습 아카이브</p>
+        </div>
+      </div>
+
+      <!-- Right Controls: Theme Toggle & User Profile -->
+      <div class="flex items-center gap-2.5">
+        <!-- Theme Toggle Button -->
+        <button id="themeToggleBtn" type="button" title="테마 전환"
+          class="p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-500/40">
+          <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+          <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+        </button>
+
+        <!-- Signed-in User Badge & Logout -->
+        <div id="headerUserArea" class="hidden items-center gap-2.5">
+          <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-900 border border-slate-200/80 dark:border-white/10">
+            <img id="userAvatar" src="" alt="프로필" class="w-6 h-6 rounded-full object-cover hidden" />
+            <div id="userAvatarFallback" class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xs font-bold">U</div>
+            <div class="text-left hidden md:block">
+              <p id="userNameDisplay" class="text-xs font-semibold leading-none"></p>
+              <p id="userEmailDisplay" class="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5"></p>
+            </div>
+          </div>
+
+          <button id="logoutBtn" type="button"
+            class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-white/10 bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-500/30 transition-all active:scale-95">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            <span>로그아웃</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Loading State Skeleton (Initial Auth Check) -->
+    <section id="initialLoadingView" class="py-20 flex flex-col items-center justify-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-500 animate-pulse">
+        <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
+      </div>
+      <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Firebase (<span class="font-mono text-xs">jyapp-ef085</span>) 인증 상태를 확인하는 중...</p>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 1. AUTHENTICATION VIEW (Logged Out State)  -->
+    <!-- ========================================== -->
+    <section id="authView" class="hidden py-6 lg:py-12">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+
+        <!-- Left Column: Intro & Features -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-xs font-semibold">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>개인별 독립 저장소 · <code class="font-mono">users/{userId}/notes</code> 보안 격리</span>
+          </div>
+
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.15]">
+            나만의 흐름으로 정리하는<br />
+            <span class="bg-gradient-to-r from-brand-500 via-indigo-400 to-amber-400 bg-clip-text text-transparent">스마트 역사 학습 노트</span>
+          </h1>
+
+          <p class="text-slate-600 dark:text-slate-400 text-base sm:text-lg leading-relaxed max-w-2xl">
+            시대별 주요 사건, 연도, 핵심 키워드를 직접 추가하고 암기 여부를 체크하세요.
+            모든 학습 데이터는 Firebase <strong class="text-slate-900 dark:text-white font-semibold">jyapp</strong> 프로젝트의
+            Firestore에 실시간으로 안전하게 보관되며 본인만 열람·수정할 수 있습니다.
+          </p>
+
+          <!-- Feature Bento Preview Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <div class="p-4 rounded-2xl bg-white dark:bg-[#18181b] border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
+              <div class="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center mb-3">
+                <i data-lucide="user-check" class="w-5 h-5"></i>
+              </div>
+              <h3 class="font-bold text-sm mb-1">간편한 멀티 로그인</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Google 계정 원클릭 로그인과 이메일/비밀번호 회원가입·로그인을 모두 지원합니다.</p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-white dark:bg-[#18181b] border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
+              <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-3">
+                <i data-lucide="database" class="w-5 h-5"></i>
+              </div>
+              <h3 class="font-bold text-sm mb-1">영구 보존 & 실시간 연동</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">추가·수정·삭제한 역사 노트가 Firestore에 즉시 저장되어 언제 접속해도 유지됩니다.</p>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-white dark:bg-[#18181b] border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-3">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+              </div>
+              <h3 class="font-bold text-sm mb-1">연표 & 플래시카드 학습</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">카드 보기, 연대기 타임라인 보기, 플래시카드 암기 테스트 모드를 자유롭게 전환하세요.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Login / Sign-up Card -->
+        <div class="lg:col-span-5">
+          <div class="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#18181b] border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-900/5 dark:shadow-black/40">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 id="authCardTitle" class="text-xl font-bold">학습 시작하기</h2>
+                <p id="authCardSubtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-1">로그인하여 나만의 역사 노트를 불러오세요</p>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-brand-500">
+                <i data-lucide="key-round" class="w-5 h-5"></i>
+              </div>
+            </div>
+
+            <!-- Google Sign-In Button -->
+            <button id="googleLoginBtn" type="button"
+              class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm bg-white dark:bg-zinc-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-white/15 hover:bg-slate-50 dark:hover:bg-zinc-700/80 transition-all active:scale-[0.98] shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40">
+              <svg class="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.8C6.2 7.2 8.9 5 12 5z"/>
+                <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.6l3.7 2.9c2.2-2 3.7-5 3.7-8.7z"/>
+                <path fill="#FBBC05" d="M5.3 14.8c-.2-.8-.4-1.6-.4-2.5s.2-1.7.4-2.5L1.6 7C.6 9 0 11.2 0 13.5s.6 4.5 1.6 6.5l3.7-2.9z" transform="translate(0 -1.2)"/>
+                <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5l-3.7 2.9C3.5 20.4 7.4 23 12 23z"/>
+              </svg>
+              <span>Google 계정으로 계속하기</span>
+            </button>
+
+            <div class="relative my-6 flex items-center justify-center">
+              <div class="border-t border-slate-200 dark:border-white/10 w-full"></div>
+              <span class="bg-white dark:bg-[#18181b] px-3 text-xs text-slate-400 whitespace-nowrap">또는 이메일 계정</span>
+              <div class="border-t border-slate-200 dark:border-white/10 w-full"></div>
+            </div>
+
+            <!-- Tabs: Email Sign In vs Sign Up -->
+            <div class="grid grid-cols-2 gap-1 p-1 rounded-xl bg-slate-100 dark:bg-zinc-900 mb-5">
+              <button id="tabSignInBtn" type="button"
+                class="py-2 text-xs font-semibold rounded-lg bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm transition-all">
+                이메일 로그인
+              </button>
+              <button id="tabSignUpBtn" type="button"
+                class="py-2 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all">
+                신규 회원가입
+              </button>
+            </div>
+
+            <!-- Email Auth Error Box -->
+            <div id="authErrorBox" class="hidden mb-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs leading-relaxed"></div>
+
+            <!-- Email / Password Form -->
+            <form id="emailAuthForm" class="space-y-4">
+              <div id="signUpNameField" class="hidden">
+                <label for="authDisplayName" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">이름 (닉네임)</label>
+                <input id="authDisplayName" type="text" maxlength="50" placeholder="예: 홍길동"
+                  class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all" />
+              </div>
+
+              <div>
+                <label for="authEmail" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">이메일 주소</label>
+                <input id="authEmail" type="email" required placeholder="name@example.com"
+                  class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all" />
+              </div>
+
+              <div>
+                <label for="authPassword" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">비밀번호 <span class="text-[11px] font-normal text-slate-400">(6자 이상)</span></label>
+                <input id="authPassword" type="password" required minlength="6" placeholder="••••••••"
+                  class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all" />
+              </div>
+
+              <button id="emailSubmitBtn" type="submit"
+                class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold bg-brand-600 hover:bg-brand-500 text-white shadow-md shadow-brand-600/20 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-brand-500/40">
+                <i data-lucide="log-in" class="w-4 h-4"></i>
+                <span id="emailSubmitBtnText">이메일로 로그인</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 2. STUDY DASHBOARD VIEW (Logged In State)  -->
+    <!-- ========================================== -->
+    <section id="appView" class="hidden space-y-6">
+
+      <!-- Bento Summary Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Total Notes -->
+        <div class="p-5 rounded-2xl bg-white dark:bg-[#18181b] border border-slate-200/80 dark:border-white/[0.08] flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400">내 전체 학습 노트</p>
+            <p id="statTotalNotes" class="text-2xl sm:text-3xl font-extrabold mt-1 font-mono">0</p>
+            <p id="firestorePathBadge" class="text-[11px] font-mono text-slate-400 mt-1 truncate max-w-[180px]" title="Firestore 저장 경로">users/.../notes</p>
+          </div>
+          <div class="w-11 h-11 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
+            <i data-lucide="book-open" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- Mastered Progress -->
+        <div class="p-5 rounded-2xl bg-white dark:bg-[#18181b] border border-slate-200/80 dark:border-white/[0.08] flex items-center justify-between">
+          <div class="w-full pr-4">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-medium text-slate-500 dark:text-slate-400">암기 완료율</p>
+              <span id="statMasteredPercent" class="text-xs font-mono font-bold text-emerald-500">0%</span>
+            </div>
+            <p id="statMasteredCount" class="text-2xl sm:text-3xl font-extrabold mt-1 font-mono">0 <span class="text-xs font-sans font-normal text-slate-400">완료</span></p>
+            <div class="w-full h-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden mt-2">
+              <div id="statProgressBar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- Needs Review Count -->
+        <div class="p-5 rounded-2xl bg-white dark:bg-[#18181b] border border-slate-200/80 dark:border-white/[0.08] flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400">복습 필요 노트</p>
+            <p id="statReviewCount" class="text-2xl sm:text-3xl font-extrabold mt-1 font-mono text-amber-500">0</p>
+            <p class="text-[11px] text-slate-400 mt-1">미완료 및 핵심 빈출 항목</p>
+          </div>
+          <div class="w-11 h-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+            <i data-lucide="flame" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="p-5 rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-700 text-white flex flex-col justify-between shadow-lg shadow-brand-600/20">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-indigo-100">새로운 역사 개념 기록</span>
+            <i data-lucide="Feather" class="w-4 h-4 text-indigo-200"></i>
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <button id="openAddModalBtn" type="button"
+              class="w-full py-2.5 px-4 rounded-xl bg-white text-brand-700 hover:bg-indigo-50 font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-95">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>새 학습 노트 추가</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter, Search & View Mode Bar -->
+      <div class="p-4 rounded-2xl bg-white dark:bg-[#18181b] border border-slate-200/80 dark:border-white/[0.08] space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+          <!-- Era Category Pills -->
+          <div id="eraFilterContainer" class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+            <button data-era="all" class="era-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-brand-600 text-white shadow-sm transition-all">전체 시대</button>
+            <button data-era="고조선·삼국" class="era-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-100 dark:bg-zinc-800/90 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all">고조선·삼국</button>
+            <button data-era="남북국·고려" class="era-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-100 dark:bg-zinc-800/90 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all">남북국·고려</button>
+            <button data-era="조선" class="era-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-100 dark:bg-zinc-800/90 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all">조선</button>
+            <button data-era="근현대" class="era-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-100 dark:bg-zinc-800/90 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all">근현대</button>
+            <button data-era="세계사" class="era-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-100 dark:bg-zinc-800/90 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all">세계사</button>
+          </div>
+
+          <!-- Search Input + Status Filter + View Switcher -->
+          <div class="flex flex-wrap items-center gap-2.5">
+            <!-- Search Input -->
+            <div class="relative flex-1 sm:flex-initial sm:w-60">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input id="searchInput" type="text" placeholder="사건, 연도, 키워드 검색..."
+                class="w-full pl-9 pr-3.5 py-2 rounded-xl text-xs bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all" />
+            </div>
+
+            <!-- Status Filter Select -->
+            <select id="statusFilterSelect" aria-label="학습 상태 필터"
+              class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/30">
+              <option value="all">모든 상태</option>
+              <option value="learning">복습 필요 (미완료)</option>
+              <option value="mastered">암기 완료</option>
+            </select>
+
+            <!-- View Switcher (Grid / Timeline / Flashcard) -->
+            <div class="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-zinc-900 border border-slate-200/60 dark:border-white/5">
+              <button type="button" data-view="grid" class="view-mode-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm transition-all" title="카드 그리드 보기">
+                <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">카드</span>
+              </button>
+              <button type="button" data-view="timeline" class="view-mode-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all" title="연표 타임라인 보기">
+                <i data-lucide="git-commit-vertical" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">연표</span>
+              </button>
+              <button type="button" data-view="flashcard" class="view-mode-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all" title="플래시카드 암기 모드">
+                <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">암기카드</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Empty State (Shown when user has 0 notes or 0 matching filter) -->
+      <div id="emptyStateView" class="hidden py-16 px-4 text-center rounded-2xl bg-white dark:bg-[#18181b] border border-dashed border-slate-300 dark:border-white/15">
+        <div class="w-14 h-14 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="scroll-text" class="w-7 h-7"></i>
+        </div>
+        <h3 id="emptyStateTitle" class="text-lg font-bold">아직 등록된 역사 학습 노트가 없습니다</h3>
+        <p id="emptyStateDesc" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mt-1.5 leading-relaxed">
+          직접 첫 번째 역사 사건 노트를 추가하거나, 한국사 핵심 샘플 데이터를 불러와 바로 체험해 보세요!
+        </p>
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <button id="emptyAddNoteBtn" type="button"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-md shadow-brand-600/20 transition-all active:scale-95">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>직접 노트 작성하기</span>
+          </button>
+          <button id="seedSampleNotesBtn" type="button"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-white/15 bg-slate-50 dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-700 dark:text-slate-200 transition-all active:scale-95">
+            <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+            <span>한국사 핵심 샘플 5선 자동 추가</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- View 1: Card Grid Container -->
+      <div id="notesGridContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+      <!-- View 2: Chronological Timeline Container -->
+      <div id="notesTimelineContainer" class="hidden relative pl-6 sm:pl-8 border-l-2 border-brand-500/30 space-y-6 my-4 ml-2 sm:ml-4"></div>
+
+      <!-- View 3: Flashcard Quiz Mode Container -->
+      <div id="notesFlashcardContainer" class="hidden py-4">
+        <div class="max-w-2xl mx-auto space-y-4">
+          <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
+            <span>카드를 클릭하면 뒷면(핵심 내용 해설)이 뒤집힙니다</span>
+            <span id="flashcardCounter" class="font-mono font-bold text-slate-700 dark:text-slate-200">1 / 1</span>
+          </div>
+
+          <!-- Flip Card -->
+          <div id="flashcardBox" class="perspective-1000 cursor-pointer select-none h-80 sm:h-96">
+            <div id="flashcardInner" class="flip-card-inner relative w-full h-full">
+              <!-- Front Side -->
+              <div class="backface-hidden absolute inset-0 p-8 rounded-2xl bg-white dark:bg-[#18181b] border-2 border-slate-200 dark:border-white/10 shadow-lg flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <span id="fcEraBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-brand-500/10 text-brand-500">시대</span>
+                  <span id="fcYearBadge" class="text-xs font-mono font-semibold text-amber-500">연도</span>
+                </div>
+                <div class="text-center my-auto space-y-3">
+                  <p class="text-xs uppercase tracking-widest text-slate-400">QUESTION / 사건·주제</p>
+                  <h3 id="fcTitle" class="text-2xl sm:text-3xl font-extrabold tracking-tight">제목</h3>
+                  <div id="fcKeywords" class="flex flex-wrap justify-center gap-1.5 pt-2"></div>
+                </div>
+                <div class="text-center text-xs text-slate-400 flex items-center justify-center gap-1.5">
+                  <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+                  <span>클릭하여 정답 및 상세 노트 확인</span>
+                </div>
+              </div>
+
+              <!-- Back Side -->
+              <div class="backface-hidden rotate-y-180 absolute inset-0 p-8 rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950 text-white border-2 border-brand-500/40 shadow-xl flex flex-col justify-between overflow-y-auto">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-mono text-indigo-300">ANSWER / 핵심 정리</span>
+                  <span id="fcMasteredBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold"></span>
+                </div>
+                <div class="my-auto py-4">
+                  <p id="fcContent" class="text-sm sm:text-base leading-relaxed whitespace-pre-line text-slate-100"></p>
+                </div>
+                <div class="flex items-center justify-between pt-3 border-t border-white/10">
+                  <span class="text-xs text-slate-400">다시 클릭하면 앞면으로 돌아갑니다</span>
+                  <button id="fcToggleMasteredBtn" type="button"
+                    class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all">
+                    암기 상태 변경
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Flashcard Navigation Controls -->
+          <div class="flex items-center justify-between gap-4 pt-2">
+            <button id="fcPrevBtn" type="button"
+              class="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold border border-slate-200 dark:border-white/10 bg-white dark:bg-[#18181b] hover:bg-slate-100 dark:hover:bg-zinc-800 flex items-center justify-center gap-1.5 transition-all active:scale-95">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              <span>이전 카드</span>
+            </button>
+            <button id="fcNextBtn" type="button"
+              class="flex-1 py-2.5 px-4 rounded-xl text-xs font-semibold border border-slate-200 dark:border-white/10 bg-white dark:bg-[#18181b] hover:bg-slate-100 dark:hover:bg-zinc-800 flex items-center justify-center gap-1.5 transition-all active:scale-95">
+              <span>다음 카드</span>
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 3. ADD / EDIT STUDY NOTE MODAL             -->
+  <!-- ========================================== -->
+  <div id="noteModalBackdrop" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="w-full max-w-xl rounded-2xl bg-white dark:bg-[#18181b] border border-slate-200 dark:border-white/10 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div class="px-6 py-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center">
+            <i data-lucide="file-plus-2" class="w-4 h-4"></i>
+          </div>
+          <h3 id="modalTitle" class="font-bold text-base">새 역사 학습 노트 추가</h3>
+        </div>
+        <button id="closeNoteModalBtn" type="button" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="noteForm" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <input type="hidden" id="noteIdInput" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Era Select -->
+          <div>
+            <label for="noteEraInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">시대 분류 <span class="text-rose-500">*</span></label>
+            <select id="noteEraInput" required
+              class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500">
+              <option value="고조선·삼국">고조선·삼국</option>
+              <option value="남북국·고려">남북국·고려</option>
+              <option value="조선">조선</option>
+              <option value="근현대">근현대</option>
+              <option value="세계사">세계사</option>
+            </select>
+          </div>
+
+          <!-- Historical Year -->
+          <div>
+            <label for="noteYearInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">연도 / 시기</label>
+            <input id="noteYearInput" type="text" maxlength="100" placeholder="예: 1443년 (세종 25년)"
+              class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500" />
+          </div>
+        </div>
+
+        <!-- Title -->
+        <div>
+          <label for="noteTitleInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">사건 / 학습 주제명 <span class="text-rose-500">*</span></label>
+          <input id="noteTitleInput" type="text" required maxlength="200" placeholder="예: 훈민정음 창제와 반포"
+            class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Importance -->
+          <div>
+            <label for="noteImportanceInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">중요도</label>
+            <select id="noteImportanceInput"
+              class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500">
+              <option value="high">★ 핵심 빈출 (High)</option>
+              <option value="medium" selected>중요 개념 (Medium)</option>
+              <option value="low">기본 배경 (Low)</option>
+            </select>
+          </div>
+
+          <!-- Keywords -->
+          <div>
+            <label for="noteKeywordsInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">핵심 키워드 <span class="text-[11px] font-normal text-slate-400">(쉼표로 구분)</span></label>
+            <input id="noteKeywordsInput" type="text" placeholder="세종대왕, 집현전, 해례본"
+              class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500" />
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div>
+          <label for="noteContentInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">상세 학습 내용 및 배경·의의 <span class="text-rose-500">*</span></label>
+          <textarea id="noteContentInput" rows="5" required maxlength="5000"
+            placeholder="사건의 배경, 전개 과정, 역사적 의의를 정리하세요..."
+            class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 leading-relaxed"></textarea>
+        </div>
+
+        <!-- Mastered Checkbox -->
+        <label class="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200/70 dark:border-white/10 cursor-pointer">
+          <input id="noteMasteredInput" type="checkbox" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500" />
+          <span class="text-xs font-medium text-slate-700 dark:text-slate-300">이 주제를 완벽히 암기했습니다 (암기 완료 표시)</span>
+        </label>
+
+        <!-- Modal Footer Buttons -->
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button id="cancelNoteModalBtn" type="button"
+            class="px-4 py-2.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all">
+            취소
+          </button>
+          <button id="saveNoteSubmitBtn" type="submit"
+            class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-md shadow-brand-600/20 transition-all active:scale-95">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            <span id="saveNoteBtnText">노트 저장</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Application Logic Module -->
+  <script type="module">
+    import {
+      auth,
+      db,
+      googleProvider,
+      signInWithPopup,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      updateProfile,
+      signOut,
+      onAuthStateChanged,
+      doc,
+      setDoc,
+      collection,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      onSnapshot
+    } from "./firebase.js";
+
+    // --- State ---
+    let currentUser = null;
+    let unsubscribeNotes = null;
+    let allNotes = [];
+    let selectedEra = "all";
+    let selectedStatus = "all";
+    let searchQuery = "";
+    let currentViewMode = "grid"; // 'grid' | 'timeline' | 'flashcard'
+    let flashcardIndex = 0;
+    let isSignUpMode = false;
+
+    // --- DOM Elements ---
+    const initialLoadingView = document.getElementById("initialLoadingView");
+    const authView = document.getElementById("authView");
+    const appView = document.getElementById("appView");
+    const headerUserArea = document.getElementById("headerUserArea");
+    const userAvatar = document.getElementById("userAvatar");
+    const userAvatarFallback = document.getElementById("userAvatarFallback");
+    const userNameDisplay = document.getElementById("userNameDisplay");
+    const userEmailDisplay = document.getElementById("userEmailDisplay");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+
+    // Auth Form Elements
+    const googleLoginBtn = document.getElementById("googleLoginBtn");
+    const tabSignInBtn = document.getElementById("tabSignInBtn");
+    const tabSignUpBtn = document.getElementById("tabSignUpBtn");
+    const signUpNameField = document.getElementById("signUpNameField");
+    const authDisplayName = document.getElementById("authDisplayName");
+    const authEmail = document.getElementById("authEmail");
+    const authPassword = document.getElementById("authPassword");
+    const emailAuthForm = document.getElementById("emailAuthForm");
+    const emailSubmitBtnText = document.getElementById("emailSubmitBtnText");
+    const authErrorBox = document.getElementById("authErrorBox");
+
+    // Dashboard Elements
+    const statTotalNotes = document.getElementById("statTotalNotes");
+    const statMasteredPercent = document.getElementById("statMasteredPercent");
+    const statMasteredCount = document.getElementById("statMasteredCount");
+    const statProgressBar = document.getElementById("statProgressBar");
+    const statReviewCount = document.getElementById("statReviewCount");
+    const firestorePathBadge = document.getElementById("firestorePathBadge");
+
+    const eraFilterContainer = document.getElementById("eraFilterContainer");
+    const searchInput = document.getElementById("searchInput");
+    const statusFilterSelect = document.getElementById("statusFilterSelect");
+    const viewModeBtns = document.querySelectorAll(".view-mode-btn");
+
+    const emptyStateView = document.getElementById("emptyStateView");
+    const emptyStateTitle = document.getElementById("emptyStateTitle");
+    const emptyStateDesc = document.getElementById("emptyStateDesc");
+    const notesGridContainer = document.getElementById("notesGridContainer");
+    const notesTimelineContainer = document.getElementById("notesTimelineContainer");
+    const notesFlashcardContainer = document.getElementById("notesFlashcardContainer");
+
+    // Flashcard Elements
+    const flashcardBox = document.getElementById("flashcardBox");
+    const flashcardInner = document.getElementById("flashcardInner");
+    const flashcardCounter = document.getElementById("flashcardCounter");
+    const fcEraBadge = document.getElementById("fcEraBadge");
+    const fcYearBadge = document.getElementById("fcYearBadge");
+    const fcTitle = document.getElementById("fcTitle");
+    const fcKeywords = document.getElementById("fcKeywords");
+    const fcMasteredBadge = document.getElementById("fcMasteredBadge");
+    const fcContent = document.getElementById("fcContent");
+    const fcToggleMasteredBtn = document.getElementById("fcToggleMasteredBtn");
+    const fcPrevBtn = document.getElementById("fcPrevBtn");
+    const fcNextBtn = document.getElementById("fcNextBtn");
+
+    // Modal Elements
+    const noteModalBackdrop = document.getElementById("noteModalBackdrop");
+    const modalTitle = document.getElementById("modalTitle");
+    const noteForm = document.getElementById("noteForm");
+    const noteIdInput = document.getElementById("noteIdInput");
+    const noteEraInput = document.getElementById("noteEraInput");
+    const noteYearInput = document.getElementById("noteYearInput");
+    const noteTitleInput = document.getElementById("noteTitleInput");
+    const noteImportanceInput = document.getElementById("noteImportanceInput");
+    const noteKeywordsInput = document.getElementById("noteKeywordsInput");
+    const noteContentInput = document.getElementById("noteContentInput");
+    const noteMasteredInput = document.getElementById("noteMasteredInput");
+    const openAddModalBtn = document.getElementById("openAddModalBtn");
+    const emptyAddNoteBtn = document.getElementById("emptyAddNoteBtn");
+    const seedSampleNotesBtn = document.getElementById("seedSampleNotesBtn");
+    const closeNoteModalBtn = document.getElementById("closeNoteModalBtn");
+    const cancelNoteModalBtn = document.getElementById("cancelNoteModalBtn");
+
+    // Initialize Icons
+    lucide.createIcons();
+
+    // --- Theme Toggle ---
+    themeToggleBtn.addEventListener("click", () => {
+      document.documentElement.classList.toggle("dark");
+    });
+
+    // --- Toast Notification Helper ---
+    function showToast(message, type = "success") {
+      const toastContainer = document.getElementById("toastContainer");
+      const el = document.createElement("div");
+      const colorClasses =
+        type === "error"
+          ? "bg-rose-600 text-white border-rose-500"
+          : type === "info"
+          ? "bg-slate-800 text-white border-slate-700"
+          : "bg-emerald-600 text-white border-emerald-500";
+
+      el.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-lg text-xs font-semibold transition-all duration-200 ${colorClasses}`;
+      el.innerHTML = `<span>${escapeHtml(message)}</span>`;
+      toastContainer.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = "0";
+        setTimeout(() => el.remove(), 200);
+      }, 3200);
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // --- Auth Mode Switch (Sign In vs Sign Up) ---
+    function setAuthTabMode(signUp) {
+      isSignUpMode = signUp;
+      authErrorBox.classList.add("hidden");
+      if (isSignUpMode) {
+        tabSignUpBtn.className = "py-2 text-xs font-semibold rounded-lg bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm transition-all";
+        tabSignInBtn.className = "py-2 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all";
+        signUpNameField.classList.remove("hidden");
+        emailSubmitBtnText.textContent = "이메일로 회원가입 및 시작";
+      } else {
+        tabSignInBtn.className = "py-2 text-xs font-semibold rounded-lg bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm transition-all";
+        tabSignUpBtn.className = "py-2 text-xs font-semibold rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all";
+        signUpNameField.classList.add("hidden");
+        emailSubmitBtnText.textContent = "이메일로 로그인";
+      }
+    }
+
+    tabSignInBtn.addEventListener("click", () => setAuthTabMode(false));
+    tabSignUpBtn.addEventListener("click", () => setAuthTabMode(true));
+
+    function showAuthError(error) {
+      console.error("Auth Error:", error);
+      const code = error?.code || "";
+      let msg = error?.message || "로그인 처리 중 오류가 발생했습니다.";
+      if (code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found") {
+        msg = "이메일 또는 비밀번호가 올바르지 않습니다. 계정이 없다면 '신규 회원가입' 탭에서 먼저 가입해 주세요.";
+      } else if (code === "auth/email-already-in-use") {
+        msg = "이미 가입된 이메일 주소입니다. '이메일 로그인' 탭에서 로그인해 주세요.";
+      } else if (code === "auth/weak-password") {
+        msg = "비밀번호는 최소 6자 이상이어야 합니다.";
+      } else if (code === "auth/popup-closed-by-user") {
+        msg = "Google 로그인 창이 닫혔습니다. 다시 시도해 주세요.";
+      } else if (code === "auth/unauthorized-domain") {
+        msg = `현재 도메인(${window.location.hostname})이 Firebase 승인된 도메인에 등록되지 않았습니다. Firebase Console > Authentication > 설정 > 승인된 도메인에 '${window.location.hostname}'을(를) 추가해 주세요.`;
+      }
+      authErrorBox.textContent = msg;
+      authErrorBox.classList.remove("hidden");
+    }
+
+    // --- Google Login ---
+    googleLoginBtn.addEventListener("click", async () => {
+      authErrorBox.classList.add("hidden");
+      try {
+        await signInWithPopup(auth, googleProvider);
+        showToast("Google 계정으로 로그인되었습니다.");
+      } catch (err) {
+        showAuthError(err);
+      }
+    });
+
+    // --- Email/Password Login & Sign-up ---
+    emailAuthForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      authErrorBox.classList.add("hidden");
+      const email = authEmail.value.trim();
+      const password = authPassword.value;
+      const displayName = authDisplayName.value.trim();
+
+      try {
+        if (isSignUpMode) {
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          if (displayName) {
+            await updateProfile(cred.user, { displayName });
+          }
+          showToast("회원가입 및 로그인이 완료되었습니다!");
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+          showToast("이메일 계정으로 로그인되었습니다.");
+        }
+        emailAuthForm.reset();
+      } catch (err) {
+        showAuthError(err);
+      }
+    });
+
+    // --- Logout ---
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        showToast("안전하게 로그아웃되었습니다.", "info");
+      } catch (err) {
+        showToast("로그아웃 중 오류가 발생했습니다.", "error");
+      }
+    });
+
+    // --- Sync User Document at users/{userId} ---
+    async function syncUserProfileDoc(user) {
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const fallbackName = user.displayName || (user.email ? user.email.split("@")[0] : "역사 학습자");
+        await setDoc(
+          userRef,
+          {
+            uid: user.uid,
+            email: (user.email || "").slice(0, 320),
+            displayName: fallbackName.slice(0, 200),
+            photoURL: (user.photoURL || "").slice(0, 2048),
+            updatedAt: Date.now()
+          },
+          { merge: true }
+        );
+      } catch (err) {
+        console.warn("User profile sync warning:", err);
+      }
+    }
+
+    // --- Observe Auth State ---
+    onAuthStateChanged(auth, (user) => {
+      initialLoadingView.classList.add("hidden");
+
+      if (unsubscribeNotes) {
+        unsubscribeNotes();
+        unsubscribeNotes = null;
+      }
+
+      if (user) {
+        currentUser = user;
+        authView.classList.add("hidden");
+        appView.classList.remove("hidden");
+        headerUserArea.classList.remove("hidden");
+        headerUserArea.classList.add("flex");
+
+        const displayName = user.displayName || (user.email ? user.email.split("@")[0] : "학습자");
+        userNameDisplay.textContent = displayName;
+        userEmailDisplay.textContent = user.email || user.uid.slice(0, 8);
+        firestorePathBadge.textContent = `users/${user.uid.slice(0, 10)}.../notes`;
+        firestorePathBadge.title = `Firestore 경로: users/${user.uid}/notes`;
+
+        if (user.photoURL) {
+          userAvatar.src = user.photoURL;
+          userAvatar.classList.remove("hidden");
+          userAvatarFallback.classList.add("hidden");
+        } else {
+          userAvatar.classList.add("hidden");
+          userAvatarFallback.classList.remove("hidden");
+          userAvatarFallback.textContent = displayName.charAt(0).toUpperCase();
+        }
+
+        syncUserProfileDoc(user);
+        subscribeToUserNotes(user.uid);
+      } else {
+        currentUser = null;
+        allNotes = [];
+        appView.classList.add("hidden");
+        authView.classList.remove("hidden");
+        headerUserArea.classList.add("hidden");
+        headerUserArea.classList.remove("flex");
+      }
+    });
+
+    // --- Subscribe to Firestore `users/{userId}/notes` ---
+    function subscribeToUserNotes(uid) {
+      const notesColRef = collection(db, "users", uid, "notes");
+      unsubscribeNotes = onSnapshot(
+        notesColRef,
+        (snapshot) => {
+          const items = [];
+          snapshot.forEach((docSnap) => {
+            items.push({ id: docSnap.id, ...docSnap.data() });
+          });
+          // Sort newest first by createdAt
+          items.sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+          allNotes = items;
+          updateDashboardStats();
+          renderNotesView();
+        },
+        (error) => {
+          console.error("Firestore subscription error:", error);
+          showToast("데이터를 불러오는 중 권한 또는 네트워크 오류가 발생했습니다.", "error");
+        }
+      );
+    }
+
+    // --- Update Top Statistics ---
+    function updateDashboardStats() {
+      const total = allNotes.length;
+      const mastered = allNotes.filter((n) => Boolean(n.mastered)).length;
+      const review = total - mastered;
+      const pct = total > 0 ? Math.round((mastered / total) * 100) : 0;
+
+      statTotalNotes.textContent = String(total);
+      statMasteredCount.innerHTML = `${mastered} <span class="text-xs font-sans font-normal text-slate-400">/ ${total} 완료</span>`;
+      statMasteredPercent.textContent = `${pct}%`;
+      statProgressBar.style.width = `${pct}%`;
+      statReviewCount.textContent = String(review);
+    }
+
+    // --- Filter Notes ---
+    function getFilteredNotes() {
+      return allNotes.filter((note) => {
+        if (selectedEra !== "all" && note.era !== selectedEra) return false;
+        if (selectedStatus === "mastered" && !note.mastered) return false;
+        if (selectedStatus === "learning" && note.mastered) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          const inTitle = (note.title || "").toLowerCase().includes(q);
+          const inContent = (note.content || "").toLowerCase().includes(q);
+          const inYear = (note.year || "").toLowerCase().includes(q);
+          const inKeywords = Array.isArray(note.keywords) && note.keywords.some((k) => String(k).toLowerCase().includes(q));
+          if (!inTitle && !inContent && !inYear && !inKeywords) return false;
+        }
+        return true;
+      });
+    }
+
+    // --- Importance Badge Helper ---
+    function getImportanceBadge(importance) {
+      if (importance === "high") {
+        return `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">★ 핵심 빈출</span>`;
+      }
+      if (importance === "low") {
+        return `<span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-500/10 text-slate-500 dark:text-slate-400">기본 배경</span>`;
+      }
+      return `<span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">중요 개념</span>`;
+    }
+
+    // --- Render Active View (Grid / Timeline / Flashcard) ---
+    function renderNotesView() {
+      const filtered = getFilteredNotes();
+
+      notesGridContainer.classList.add("hidden");
+      notesTimelineContainer.classList.add("hidden");
+      notesFlashcardContainer.classList.add("hidden");
+
+      if (filtered.length === 0) {
+        emptyStateView.classList.remove("hidden");
+        if (allNotes.length === 0) {
+          emptyStateTitle.textContent = "아직 등록된 역사 학습 노트가 없습니다";
+          emptyStateDesc.textContent = "직접 첫 번째 역사 사건 노트를 추가하거나, 한국사 핵심 샘플 데이터를 불러와 바로 체험해 보세요!";
+          seedSampleNotesBtn.classList.remove("hidden");
+        } else {
+          emptyStateTitle.textContent = "조건에 맞는 학습 노트가 없습니다";
+          emptyStateDesc.textContent = "검색어나 시대/학습 상태 필터를 변경해 보세요.";
+          seedSampleNotesBtn.classList.add("hidden");
+        }
+        return;
+      }
+
+      emptyStateView.classList.add("hidden");
+
+      if (currentViewMode === "grid") {
+        notesGridContainer.classList.remove("hidden");
+        renderGridCards(filtered);
+      } else if (currentViewMode === "timeline") {
+        notesTimelineContainer.classList.remove("hidden");
+        renderTimeline(filtered);
+      } else if (currentViewMode === "flashcard") {
+        notesFlashcardContainer.classList.remove("hidden");
+        renderFlashcard(filtered);
+      }
+
+      lucide.createIcons();
+    }
+
+    // --- 1. Render Card Grid ---
+    function renderGridCards(notes) {
+      notesGridContainer.innerHTML = notes
+        .map((note) => {
+          const keywordsHtml = Array.isArray(note.keywords) && note.keywords.length > 0
+            ? `<div class="flex flex-wrap gap-1.5 mt-3">
+                ${note.keywords
+                  .map((kw) => `<span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300">#${escapeHtml(kw)}</span>`)
+                  .join("")}
+              </div>`
+            : "";
+
+          const masteredBtnClass = note.mastered
+            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+            : "bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-slate-400 border-transparent hover:border-slate-300";
+
+          return `
+            <article class="group p-5 rounded-2xl bg-white dark:bg-[#18181b] border border-slate-200/80 dark:border-white/[0.08] hover:border-brand-500/40 dark:hover:border-brand-500/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+              <div>
+                <!-- Card Top Metadata -->
+                <div class="flex items-center justify-between gap-2 mb-3">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-brand-500/10 text-brand-600 dark:text-brand-400">${escapeHtml(note.era)}</span>
+                    ${note.year ? `<span class="text-xs font-mono font-semibold text-amber-600 dark:text-amber-400">${escapeHtml(note.year)}</span>` : ""}
+                  </div>
+                  ${getImportanceBadge(note.importance)}
+                </div>
+
+                <!-- Title -->
+                <h3 class="text-base font-bold text-slate-900 dark:text-white leading-snug mb-2 ${note.mastered ? 'line-through decoration-emerald-500/50 text-slate-500 dark:text-slate-400' : ''}">
+                  ${escapeHtml(note.title)}
+                </h3>
+
+                <!-- Content -->
+                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line line-clamp-5">${escapeHtml(note.content)}</p>
+
+                ${keywordsHtml}
+              </div>
+
+              <!-- Card Footer Actions -->
+              <div class="mt-5 pt-3.5 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between gap-2">
+                <button type="button" data-action="toggle-mastered" data-id="${escapeHtml(note.id)}"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all active:scale-95 ${masteredBtnClass}">
+                  <i data-lucide="${note.mastered ? 'check-circle-2' : 'circle'}" class="w-3.5 h-3.5"></i>
+                  <span>${note.mastered ? '암기 완료' : '학습 중'}</span>
+                </button>
+
+                <div class="flex items-center gap-1">
+                  <button type="button" data-action="edit" data-id="${escapeHtml(note.id)}" title="수정"
+                    class="p-2 rounded-xl text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                  </button>
+                  <button type="button" data-action="delete" data-id="${escapeHtml(note.id)}" title="삭제"
+                    class="p-2 rounded-xl text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+    }
+
+    // --- 2. Render Chronological Timeline ---
+    function renderTimeline(notes) {
+      // Sort by year number if possible, otherwise keep order
+      const sorted = [...notes].sort((a, b) => {
+        const numA = parseInt((a.year || "").replace(/[^0-9-]/g, ""), 10) || 9999;
+        const numB = parseInt((b.year || "").replace(/[^0-9-]/g, ""), 10) || 9999;
+        return numA - numB;
+      });
+
+      notesTimelineContainer.innerHTML = sorted
+        .map((note) => `
+          <div class="relative group">
+            <div class="w-3.5 h-3.5 rounded-full ${note.mastered ? 'bg-emerald-500' : 'bg-brand-500'} ring-4 ring-slate-50 dark:ring-[#09090b] absolute -left-[31px] sm:-left-[39px] top-1.5"></div>
+            <div class="p-5 rounded-2xl bg-white dark:bg-[#18181b] border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-brand-500/10 text-brand-600 dark:text-brand-400">${escapeHtml(note.era)}</span>
+                  <span class="text-sm font-mono font-bold text-amber-500">${escapeHtml(note.year || '연도 미상')}</span>
+                  ${getImportanceBadge(note.importance)}
+                </div>
+                <div class="flex items-center gap-1">
+                  <button type="button" data-action="toggle-mastered" data-id="${escapeHtml(note.id)}"
+                    class="px-2.5 py-1 rounded-lg text-xs font-semibold ${note.mastered ? 'bg-emerald-500/15 text-emerald-500' : 'bg-slate-100 dark:bg-zinc-800 text-slate-400'}">
+                    ${note.mastered ? '✓ 암기 완료' : '학습 중'}
+                  </button>
+                  <button type="button" data-action="edit" data-id="${escapeHtml(note.id)}" class="p-1.5 rounded-lg text-slate-400 hover:text-brand-500">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                  </button>
+                  <button type="button" data-action="delete" data-id="${escapeHtml(note.id)}" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+              <h4 class="text-base font-bold mb-1.5">${escapeHtml(note.title)}</h4>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">${escapeHtml(note.content)}</p>
+            </div>
+          </div>
+        `)
+        .join("");
+    }
+
+    // --- 3. Render Flashcard Mode ---
+    function renderFlashcard(notes) {
+      if (flashcardIndex >= notes.length) flashcardIndex = 0;
+      if (flashcardIndex < 0) flashcardIndex = notes.length - 1;
+
+      const note = notes[flashcardIndex];
+      flashcardInner.classList.remove("flip-card-flipped");
+      flashcardCounter.textContent = `${flashcardIndex + 1} / ${notes.length}`;
+      fcEraBadge.textContent = note.era;
+      fcYearBadge.textContent = note.year || "연도 미지정";
+      fcTitle.textContent = note.title;
+      fcContent.textContent = note.content;
+
+      fcKeywords.innerHTML = Array.isArray(note.keywords)
+        ? note.keywords.map((k) => `<span class="px-2.5 py-0.5 rounded-full text-xs bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300">#${escapeHtml(k)}</span>`).join("")
+        : "";
+
+      if (note.mastered) {
+        fcMasteredBadge.textContent = "✓ 암기 완료";
+        fcMasteredBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300";
+        fcToggleMasteredBtn.textContent = "복습 필요로 변경";
+      } else {
+        fcMasteredBadge.textContent = "학습 중";
+        fcMasteredBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/20 text-amber-300";
+        fcToggleMasteredBtn.textContent = "암기 완료로 체크";
+      }
+
+      fcToggleMasteredBtn.onclick = async (e) => {
+        e.stopPropagation();
+        await toggleNoteMastered(note.id);
+      };
+    }
+
+    flashcardBox.addEventListener("click", () => {
+      flashcardInner.classList.toggle("flip-card-flipped");
+    });
+
+    fcPrevBtn.addEventListener("click", () => {
+      const filtered = getFilteredNotes();
+      if (!filtered.length) return;
+      flashcardIndex = (flashcardIndex - 1 + filtered.length) % filtered.length;
+      renderFlashcard(filtered);
+    });
+
+    fcNextBtn.addEventListener("click", () => {
+      const filtered = getFilteredNotes();
+      if (!filtered.length) return;
+      flashcardIndex = (flashcardIndex + 1) % filtered.length;
+      renderFlashcard(filtered);
+    });
+
+    // --- Delegated Clicks on Grid & Timeline Cards ---
+    function handleCardActionClick(e) {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const noteId = btn.dataset.id;
+      if (action === "toggle-mastered") {
+        toggleNoteMastered(noteId);
+      } else if (action === "edit") {
+        openEditNoteModal(noteId);
+      } else if (action === "delete") {
+        deleteStudyNote(noteId);
+      }
+    }
+
+    notesGridContainer.addEventListener("click", handleCardActionClick);
+    notesTimelineContainer.addEventListener("click", handleCardActionClick);
+
+    // --- CRUD Operations on Firestore (`users/{userId}/notes/{noteId}`) ---
+    async function toggleNoteMastered(noteId) {
+      if (!currentUser) return;
+      const note = allNotes.find((n) => n.id === noteId);
+      if (!note) return;
+      try {
+        const noteRef = doc(db, "users", currentUser.uid, "notes", noteId);
+        await updateDoc(noteRef, {
+          mastered: !note.mastered,
+          updatedAt: Date.now()
+        });
+        showToast(!note.mastered ? "암기 완료로 표시했습니다!" : "복습 필요 상태로 변경했습니다.", "info");
+      } catch (err) {
+        console.error("Toggle mastered error:", err);
+        showToast("상태 변경 중 오류가 발생했습니다.", "error");
+      }
+    }
+
+    async function deleteStudyNote(noteId) {
+      if (!currentUser) return;
+      const note = allNotes.find((n) => n.id === noteId);
+      if (!note) return;
+      if (!window.confirm(`'${note.title}' 노트를 정말 삭제하시겠습니까?`)) return;
+
+      try {
+        const noteRef = doc(db, "users", currentUser.uid, "notes", noteId);
+        await deleteDoc(noteRef);
+        showToast("학습 노트가 삭제되었습니다.", "info");
+      } catch (err) {
+        console.error("Delete note error:", err);
+        showToast("삭제 중 오류가 발생했습니다.", "error");
+      }
+    }
+
+    // --- Modal Open / Close ---
+    function openAddNoteModal() {
+      noteForm.reset();
+      noteIdInput.value = "";
+      modalTitle.textContent = "새 역사 학습 노트 추가";
+      noteImportanceInput.value = "medium";
+      noteModalBackdrop.classList.remove("hidden");
+      noteModalBackdrop.classList.add("flex");
+      noteTitleInput.focus();
+    }
+
+    function openEditNoteModal(noteId) {
+      const note = allNotes.find((n) => n.id === noteId);
+      if (!note) return;
+      noteIdInput.value = note.id;
+      modalTitle.textContent = "역사 학습 노트 수정";
+      noteEraInput.value = note.era || "조선";
+      noteYearInput.value = note.year || "";
+      noteTitleInput.value = note.title || "";
+      noteImportanceInput.value = note.importance || "medium";
+      noteKeywordsInput.value = Array.isArray(note.keywords) ? note.keywords.join(", ") : "";
+      noteContentInput.value = note.content || "";
+      noteMasteredInput.checked = Boolean(note.mastered);
+
+      noteModalBackdrop.classList.remove("hidden");
+      noteModalBackdrop.classList.add("flex");
+      noteTitleInput.focus();
+    }
+
+    function closeNoteModal() {
+      noteModalBackdrop.classList.add("hidden");
+      noteModalBackdrop.classList.remove("flex");
+    }
+
+    openAddModalBtn.addEventListener("click", openAddNoteModal);
+    emptyAddNoteBtn.addEventListener("click", openAddNoteModal);
+    closeNoteModalBtn.addEventListener("click", closeNoteModal);
+    cancelNoteModalBtn.addEventListener("click", closeNoteModal);
+    noteModalBackdrop.addEventListener("click", (e) => {
+      if (e.target === noteModalBackdrop) closeNoteModal();
+    });
+
+    // --- Create or Update Note Submit ---
+    noteForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+
+      const editingId = noteIdInput.value.trim();
+      const title = noteTitleInput.value.trim().slice(0, 200);
+      const era = noteEraInput.value.trim().slice(0, 100);
+      const year = noteYearInput.value.trim().slice(0, 100);
+      const content = noteContentInput.value.trim().slice(0, 5000);
+      const importance = ["high", "medium", "low"].includes(noteImportanceInput.value)
+        ? noteImportanceInput.value
+        : "medium";
+      const keywords = noteKeywordsInput.value
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean)
+        .slice(0, 20);
+      const mastered = Boolean(noteMasteredInput.checked);
+
+      if (!title || !era || !content) {
+        showToast("필수 항목(시대, 제목, 내용)을 모두 입력해 주세요.", "error");
+        return;
+      }
+
+      try {
+        if (editingId) {
+          const noteRef = doc(db, "users", currentUser.uid, "notes", editingId);
+          await updateDoc(noteRef, {
+            title,
+            era,
+            year,
+            content,
+            importance,
+            keywords,
+            mastered,
+            updatedAt: Date.now()
+          });
+          showToast("학습 노트가 수정되었습니다!");
+        } else {
+          const notesColRef = collection(db, "users", currentUser.uid, "notes");
+          await addDoc(notesColRef, {
+            uid: currentUser.uid,
+            title,
+            era,
+            year,
+            content,
+            importance,
+            keywords,
+            mastered,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+          });
+          showToast("새 역사 학습 노트가 저장되었습니다!");
+        }
+        closeNoteModal();
+      } catch (err) {
+        console.error("Save note error:", err);
+        showToast("저장 중 오류가 발생했습니다.", "error");
+      }
+    });
+
+    // --- Seed 5 Sample Korean History Notes ---
+    seedSampleNotesBtn.addEventListener("click", async () => {
+      if (!currentUser) return;
+      const samples = [
+        {
+          era: "고조선·삼국",
+          year: "기원전 2333년 (삼국유사 기록)",
+          title: "고조선의 건국과 8조법",
+          importance: "high",
+          keywords: ["단군왕검", "홍익인간", "청동기 문화", "8조법"],
+          content: "• 청동기 문화를 배경으로 단군왕검이 건국 (제정일치 사회)\n• 건국 이념: 널리 인간을 이롭게 한다는 '홍익인간(弘益人間)'\n• 8조법: 생명 존중, 노동력 중시, 사유재산 보호 및 계급 사회였음을 보여줌.",
+          mastered: false
+        },
+        {
+          era: "고조선·삼국",
+          year: "612년 (영양왕 23년)",
+          title: "살수대첩과 을지문덕의 활약",
+          importance: "high",
+          keywords: ["을지문덕", "수 양제", "살수(청천강)", "고구려 대외항쟁"],
+          content: "• 배경: 중국을 통일한 수나라 양제가 113만 대군을 동원해 고구려를 침략\n• 전개: 을지문덕 장군이 유도 작전과 '여수장우중문시'로 적을 피로하게 한 뒤 살수(청천강)에서 대파\n• 의의: 고구려가 동북아 세력 균형을 지켜내고 수나라 멸망의 원인이 됨.",
+          mastered: true
+        },
+        {
+          era: "남북국·고려",
+          year: "993년 (성종 12년)",
+          title: "서희의 외교 담판과 강동 6주 확보",
+          importance: "high",
+          keywords: ["서희", "거란 1차 침입", "소손녕", "강동 6주"],
+          content: "• 배경: 거란(요)의 소손녕이 80만 대군을 이끌고 고려를 침입\n• 전개: 서희가 거란의 침입 의도(송과의 단교 요구)를 간파하고 고구려 계승 의식을 내세워 담판\n• 결과: 거란과 교류하는 조건으로 압록강 동쪽 '강동 6주'를 확보하여 영토를 확장함.",
+          mastered: false
+        },
+        {
+          era: "조선",
+          year: "1443년 창제 · 1446년 반포",
+          title: "훈민정음 창제와 민족 문화의 발달",
+          importance: "high",
+          keywords: ["세종대왕", "집현전", "훈민정음 해례본", "애민정신"],
+          content: "• 배경: 한자 사용의 어려움으로 백성들이 뜻을 펴지 못하는 것을 안타깝게 여긴 세종의 애민정신\n• 특징: 발음 기관을 본뜬 과학적 자음과 천·지·인 삼재를 본뜬 모음으로 구성된 독창적 문자\n• 의의: 유네스코 세계기록유산 등재 (훈민정음 해례본).",
+          mastered: true
+        },
+        {
+          era: "근현대",
+          year: "1919년 3월 1일 ~ 4월",
+          title: "3·1 운동과 대한민국 임시정부 수립",
+          importance: "high",
+          keywords: ["기미독립선언서", "비폭력 만세운동", "대한민국 임시정부", "문화통치"],
+          content: "• 배경: 윌슨의 민족자결주의 제창, 도쿄 2·8 독립선언, 고종 황제의 인산일\n• 전개: 도시에서 농촌 및 국외(만주, 연해주, 미주)로 확산된 최대 규모의 항일 독립운동\n• 의의: 일제 통치 방식이 무단통치에서 이른바 '문화통치'로 전환되었고, 상하이 대한민국 임시정부 수립의 계기가 됨.",
+          mastered: false
+        }
+      ];
+
+      try {
+        seedSampleNotesBtn.disabled = true;
+        const notesColRef = collection(db, "users", currentUser.uid, "notes");
+        const now = Date.now();
+        for (let i = 0; i < samples.length; i++) {
+          const item = samples[i];
+          await addDoc(notesColRef, {
+            uid: currentUser.uid,
+            title: item.title,
+            era: item.era,
+            year: item.year,
+            content: item.content,
+            importance: item.importance,
+            keywords: item.keywords,
+            mastered: item.mastered,
+            createdAt: now + i,
+            updatedAt: now + i
+          });
+        }
+        showToast("한국사 핵심 샘플 노트 5선이 추가되었습니다!");
+      } catch (err) {
+        console.error("Seed sample error:", err);
+        showToast("샘플 데이터 추가 중 오류가 발생했습니다.", "error");
+      } finally {
+        seedSampleNotesBtn.disabled = false;
+      }
+    });
+
+    // --- Filters & View Switcher Events ---
+    eraFilterContainer.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-era]");
+      if (!btn) return;
+      selectedEra = btn.dataset.era;
+      eraFilterContainer.querySelectorAll(".era-tab").forEach((el) => {
+        if (el.dataset.era === selectedEra) {
+          el.className = "era-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-brand-600 text-white shadow-sm transition-all";
+        } else {
+          el.className = "era-tab px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap bg-slate-100 dark:bg-zinc-800/90 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all";
+        }
+      });
+      flashcardIndex = 0;
+      renderNotesView();
+    });
+
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value.trim();
+      flashcardIndex = 0;
+      renderNotesView();
+    });
+
+    statusFilterSelect.addEventListener("change", (e) => {
+      selectedStatus = e.target.value;
+      flashcardIndex = 0;
+      renderNotesView();
+    });
+
+    viewModeBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        currentViewMode = btn.dataset.view;
+        viewModeBtns.forEach((b) => {
+          if (b.dataset.view === currentViewMode) {
+            b.className = "view-mode-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-sm transition-all";
+          } else {
+            b.className = "view-mode-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all";
+          }
+        });
+        renderNotesView();
+      });
+    });
+  </script>
+</body>
+</html>

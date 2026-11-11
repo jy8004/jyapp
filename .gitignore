@@ -1,0 +1,13 @@
+node_modules/
+.vercel/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+bin/
+downloads/
+.agent/
+mcp_jason.txt
+youtube-downloader.html
+youtube-server.js
+유튜브_다운로더_실행.bat
+pdf-editor.html

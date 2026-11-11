@@ -1,0 +1,193 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // This security rules file assumes the following data structures:
+    //
+    // Collection: users
+    // Document ID: {userId} (matches Firebase Auth UID)
+    // Fields:
+    //   - uid: string (required, immutable, must equal userId) - Owner UID
+    //   - email: string (optional, <= 320 chars) - User email address (PII)
+    //   - displayName: string (optional, <= 200 chars) - User display name
+    //   - photoURL: string (optional, <= 2048 chars) - User avatar URL
+    //   - createdAt: timestamp | number | string (optional, immutable on update) - Creation timestamp
+    //   - updatedAt: timestamp | number | string (optional) - Last update timestamp
+    //
+    // Subcollection: users/{userId}/notes
+    // Document ID: {noteId} (auto-generated or custom ID)
+    // Fields:
+    //   - uid: string (required, immutable, must equal userId) - Owner UID
+    //   - title: string (required, 1..200 chars) - Study note title / historical topic
+    //   - era: string (required, 1..100 chars) - Historical era / period
+    //   - content: string (required, 1..5000 chars) - Detailed study note content
+    //   - mastered: bool (required) - Whether the user has mastered this note
+    //   - year: string (optional, <= 100 chars) - Historical year or date range
+    //   - importance: string (optional, in ['high', 'medium', 'low']) - Study priority level
+    //   - keywords: list (optional, <= 20 items) - Key historical terms/tags
+    //   - createdAt: timestamp | number | string (optional, immutable on update) - Creation timestamp
+    //   - updatedAt: timestamp | number | string (optional) - Last update timestamp
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user owns the resource based on path parameter userId
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if user is owner based on existing document's uid field
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    // Verify UID hasn't been tampered with on create
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == request.auth.uid;
+    }
+
+    // Ensure uid field is not modified on update
+    function uidNotModified() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == resource.data.uid;
+    }
+
+    // Ensure createdAt field is not modified on update if already set
+    function createdAtNotModified() {
+      return !('createdAt' in resource.data) ||
+        !('createdAt' in request.resource.data) ||
+        request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    // Validate required fields exist
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Validate that the document contains only the allowed fields
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Validate string length on request.resource.data
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+
+    // Validate optional string (if present and non-null, must be string within length bounds)
+    function isValidOptionalString(field, minLen, maxLen) {
+      return !(field in request.resource.data) ||
+        request.resource.data[field] == null ||
+        (request.resource.data[field] is string &&
+         request.resource.data[field].size() >= minLen &&
+         request.resource.data[field].size() <= maxLen);
+    }
+
+    // Validate that a list is a list and enforces size limits
+    function isValidList(list, maxSize) {
+      return list is list && list.size() <= maxSize;
+    }
+
+    // Validate optional timestamp/date representation (timestamp, number, or bounded string)
+    function isValidOptionalTimeField(field) {
+      return !(field in request.resource.data) ||
+        request.resource.data[field] == null ||
+        request.resource.data[field] is timestamp ||
+        request.resource.data[field] is int ||
+        request.resource.data[field] is float ||
+        (request.resource.data[field] is string &&
+         request.resource.data[field].size() >= 1 &&
+         request.resource.data[field].size() <= 100);
+    }
+
+    // ===============================================================
+    // Domain Validators (Called on BOTH create and update)
+    // ===============================================================
+
+    function isValidUserProfile(data, userId) {
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'createdAt', 'updatedAt']) &&
+        hasRequiredFields(['uid']) &&
+        data.uid is string &&
+        data.uid == userId &&
+        data.uid == request.auth.uid &&
+        isValidOptionalString('email', 0, 320) &&
+        isValidOptionalString('displayName', 0, 200) &&
+        isValidOptionalString('photoURL', 0, 2048) &&
+        isValidOptionalTimeField('createdAt') &&
+        isValidOptionalTimeField('updatedAt');
+    }
+
+    function isValidStudyNote(data, userId) {
+      return hasOnlyAllowedFields([
+          'uid', 'title', 'era', 'content', 'mastered',
+          'year', 'importance', 'keywords', 'createdAt', 'updatedAt'
+        ]) &&
+        hasRequiredFields(['uid', 'title', 'era', 'content', 'mastered']) &&
+        data.uid is string &&
+        data.uid == userId &&
+        data.uid == request.auth.uid &&
+        validStringLength('title', 1, 200) &&
+        validStringLength('era', 1, 100) &&
+        validStringLength('content', 1, 5000) &&
+        data.mastered is bool &&
+        isValidOptionalString('year', 0, 100) &&
+        (!( 'importance' in data ) || data.importance == null || (data.importance is string && data.importance in ['high', 'medium', 'low'])) &&
+        (!( 'keywords' in data ) || data.keywords == null || isValidList(data.keywords, 20)) &&
+        isValidOptionalTimeField('createdAt') &&
+        isValidOptionalTimeField('updatedAt');
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // User Profile Document
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) &&
+        uidUnchanged() &&
+        isValidUserProfile(request.resource.data, userId);
+      allow update: if isOwner(userId) &&
+        isDocOwner() &&
+        uidNotModified() &&
+        createdAtNotModified() &&
+        isValidUserProfile(request.resource.data, userId);
+      allow delete: if isOwner(userId) && isDocOwner();
+
+      // User's History Study Notes Subcollection
+      match /notes/{noteId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+          uidUnchanged() &&
+          isValidStudyNote(request.resource.data, userId);
+        allow update: if isOwner(userId) &&
+          isDocOwner() &&
+          uidNotModified() &&
+          createdAtNotModified() &&
+          isValidStudyNote(request.resource.data, userId);
+        allow delete: if isOwner(userId) && isDocOwner();
+      }
+    }
+
+    // Default Deny All Other Paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
